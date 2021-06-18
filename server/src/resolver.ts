@@ -7,27 +7,26 @@ export const resolvers: IResolvers<
   { readonly prismaClient: PrismaClient }
 > = {
   Product: {
-    async reviews(parent: Product, _args, ctx) {
-      const reviews = await ctx.prismaClient.review.findMany({
-        where: {
-          product: parent
-        }
-      });
-      return reviews;
+    reviews(parent: Product, _args, ctx) {
+      return ctx.prismaClient.product
+        .findUnique({
+          where: {
+            id: parent.id
+          }
+        })
+        .reviews();
     }
   },
   Query: {
     async product(_root, { id }: { readonly id: string }, ctx) {
-      const product = await ctx.prismaClient.product.findFirst({
+      return ctx.prismaClient.product.findUnique({
         where: {
           id
         }
       });
-      return product;
     },
-    async products(_root, _args, ctx) {
-      const products = await ctx.prismaClient.product.findMany();
-      return products;
+    products(_root, _args, ctx) {
+      return ctx.prismaClient.product.findMany();
     }
   },
   Mutation: {

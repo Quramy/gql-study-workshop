@@ -47,7 +47,9 @@ const server = new ApolloServer({
   typeDefs,
   cors: true,
   context() {
-    const prismaClient = new PrismaClient();
+    const prismaClient = new PrismaClient({
+      log: ["query", "info", "warn", "error"]
+    });
     return {
       prismaClient
     };
