@@ -11,11 +11,12 @@ generator client {
 }
 
 model Product {
-  id       String   @id
-  name     String
-  imageURL String
-  price    Int
-  reviews  Review[]
+  id          String   @id
+  name        String
+  description String
+  imageURL    String
+  price       Int
+  reviews     Review[]
 }
 
 model Review {

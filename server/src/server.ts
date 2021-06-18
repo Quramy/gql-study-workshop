@@ -3,6 +3,9 @@ import { PrismaClient } from "@prisma/client";
 import { resolvers } from "./resolver";
 
 const typeDefs = `
+  """
+  商品。だがし。
+  """
   type Product {
     id: ID!
     name: String!
@@ -12,6 +15,9 @@ const typeDefs = `
     reviews: [Review!]!
   }
 
+  """
+  商品のレビュー
+  """
   type Review {
     id: ID!
     star: Int!
@@ -23,16 +29,18 @@ const typeDefs = `
     commentBody: String!
   }
 
-
   type Query {
-    products: [Product]!
+    "商品の全件取得"
+    products: [Product!]!
+
+    "IDを指定した商品単品取得"
     product(id: ID!): Product
   }
 
   type Mutation {
+    "指定した商品にレビューを追加する"
     addReview(productId: ID!, addReviewInput: AddReviewInput!): Review
   }
-
 `;
 
 const server = new ApolloServer({
