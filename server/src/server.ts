@@ -1,6 +1,7 @@
-import { ApolloServer } from "apollo-server";
+import { v4 as uuid } from "uuid";
+import { ApolloServer, IResolvers } from "apollo-server";
 import { PrismaClient } from "@prisma/client";
-import { resolvers } from "./resolver";
+import { PrismaSelect } from "@paljs/plugins";
 
 const typeDefs = `
   """
@@ -43,8 +44,58 @@ const typeDefs = `
   }
 `;
 
+const resolvers: IResolvers<any, { readonly prismaClient: PrismaClient }> = {
+  Query: {
+    product(_root, { id }: { readonly id: string }, ctx, info) {
+      const select = new PrismaSelect(info);
+      return ctx.prismaClient.product.findUnique({
+        ...select.value,
+        where: {
+          id
+        }
+      });
+    },
+    products(_root, _args, ctx, info) {
+      const select = new PrismaSelect(info);
+      return ctx.prismaClient.product.findMany({
+        ...select.value
+      });
+    }
+  },
+  Mutation: {
+    async addReview(
+      _root,
+      {
+        productId,
+        addReviewInput
+      }: {
+        readonly productId: string;
+        readonly addReviewInput: {
+          readonly commentBody: string;
+          readonly star: number;
+        };
+      },
+      ctx
+    ) {
+      const product = await ctx.prismaClient.product.findUnique({
+        where: {
+          id: productId
+        }
+      });
+      if (!product) return null;
+      const review = await ctx.prismaClient.review.create({
+        data: {
+          id: uuid(),
+          ...addReviewInput,
+          productId
+        }
+      });
+      return review;
+    }
+  }
+};
+
 const server = new ApolloServer({
-  typeDefs,
   cors: true,
   context() {
     const prismaClient = new PrismaClient({
@@ -54,8 +105,8 @@ const server = new ApolloServer({
       prismaClient
     };
   },
+  typeDefs,
   resolvers
-  // mocks: {},
 });
 
 const port = parseInt(process.env.PORT ?? "4010", 10);
