@@ -1,0 +1,26 @@
+{
+  "name": "server",
+  "private": true,
+  "scripts": {
+    "postinstall": "npm run prisma:gen && npm run prisma:migrate",
+    "prisma:gen": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "start": "ts-node-dev src/server.ts",
+    "seed": "ts-node prisma/seed.dev.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^2.25.0",
+    "apollo-server": "^2.25.1",
+    "graphql": "^15.5.0",
+    "sqlite": "^4.0.23",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^15.12.3",
+    "@types/uuid": "^8.3.0",
+    "prettier": "^2.3.1",
+    "prisma": "^2.25.0",
+    "ts-node-dev": "^1.1.6",
+    "typescript": "^4.3.4"
+  }
+}
