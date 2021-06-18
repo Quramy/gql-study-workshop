@@ -9,6 +9,7 @@
     "seed": "ts-node prisma/seed.dev.ts"
   },
   "dependencies": {
+    "@paljs/plugins": "^3.3.3",
     "@prisma/client": "^2.25.0",
     "apollo-server": "^2.25.1",
     "graphql": "^15.5.0",

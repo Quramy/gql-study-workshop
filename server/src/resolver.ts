@@ -1,32 +1,28 @@
 import { v4 as uuid } from "uuid";
-import type { PrismaClient, Product } from "@prisma/client";
 import { IResolvers } from "apollo-server";
+
+import type { PrismaClient, Product } from "@prisma/client";
+import { PrismaSelect } from "@paljs/plugins";
 
 export const resolvers: IResolvers<
   any,
   { readonly prismaClient: PrismaClient }
 > = {
-  Product: {
-    reviews(parent: Product, _args, ctx) {
-      return ctx.prismaClient.product
-        .findUnique({
-          where: {
-            id: parent.id
-          }
-        })
-        .reviews();
-    }
-  },
   Query: {
-    async product(_root, { id }: { readonly id: string }, ctx) {
+    product(_root, { id }: { readonly id: string }, ctx, info) {
+      const select = new PrismaSelect(info);
       return ctx.prismaClient.product.findUnique({
+        ...select.value,
         where: {
           id
         }
       });
     },
-    products(_root, _args, ctx) {
-      return ctx.prismaClient.product.findMany();
+    products(_root, _args, ctx, info) {
+      const select = new PrismaSelect(info);
+      return ctx.prismaClient.product.findMany({
+        ...select.value
+      });
     }
   },
   Mutation: {
@@ -44,7 +40,7 @@ export const resolvers: IResolvers<
       },
       ctx
     ) {
-      const product = await ctx.prismaClient.product.findFirst({
+      const product = await ctx.prismaClient.product.findUnique({
         where: {
           id: productId
         }
