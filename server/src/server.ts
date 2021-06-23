@@ -26,8 +26,8 @@ const typeDefs = `
   }
 
   input AddReviewInput {
-    star: Int!
     commentBody: String!
+    star: Int
   }
 
   type Query {
@@ -41,6 +41,12 @@ const typeDefs = `
   type Mutation {
     "指定した商品にレビューを追加する"
     addReview(productId: ID!, addReviewInput: AddReviewInput!): Review
+
+    "指定したレビューを削除する"
+    deleteReview(reviewId: ID!): ID
+
+    "レビューの Star 数 を増やす"
+    incrementReviewStars(reviewId: ID!): Review
   }
 `;
 
@@ -67,12 +73,12 @@ const resolvers: IResolvers<any, { readonly prismaClient: PrismaClient }> = {
       _root,
       {
         productId,
-        addReviewInput
+        addReviewInput: { commentBody, star = 0 }
       }: {
         readonly productId: string;
         readonly addReviewInput: {
           readonly commentBody: string;
-          readonly star: number;
+          readonly star?: number;
         };
       },
       ctx
@@ -86,11 +92,49 @@ const resolvers: IResolvers<any, { readonly prismaClient: PrismaClient }> = {
       const review = await ctx.prismaClient.review.create({
         data: {
           id: uuid(),
-          ...addReviewInput,
+          commentBody,
+          star,
           productId
         }
       });
       return review;
+    },
+    async deleteReview(
+      _root,
+      { reviewId }: { readonly reviewId: string },
+      ctx
+    ) {
+      await ctx.prismaClient.review.delete({
+        where: {
+          id: reviewId
+        }
+      });
+      return reviewId;
+    },
+    async incrementReviewStars(
+      _root,
+      { reviewId }: { readonly reviewId: string },
+      ctx
+    ) {
+      const review = await ctx.prismaClient.review.findUnique({
+        where: {
+          id: reviewId
+        }
+      });
+      if (!review) return null;
+      await ctx.prismaClient.review.update({
+        where: {
+          id: reviewId
+        },
+        data: {
+          ...review,
+          star: review.star + 1
+        }
+      });
+      return {
+        ...review,
+        star: review.star + 1
+      };
     }
   }
 };
