@@ -613,3 +613,8 @@ const [addReview, { loading: submitting }] = useMutation<
 ```
 
 実際に画面からレビューを投稿し、レビュー一覧に反映されることを確認してみましょう。
+
+---
+
+[Chapter 1 へ](./01_what_gql.md)
+[Chapter 3 へ](./03_colocation.md)

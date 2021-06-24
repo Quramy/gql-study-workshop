@@ -515,3 +515,7 @@ Fragment を使ったリファクタリングの結果、React Component と Gra
 ```
 
 重要なのは **「技術(React or GraphQL)の違い( = 縦軸)で分けるのではなく、機能の違い( = 横軸）で分割することで凝集度を高めた」** ということです。
+
+---
+
+[Chapter 2 へ](./02_frontend_dev.md)
