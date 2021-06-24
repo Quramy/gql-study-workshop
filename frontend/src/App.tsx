@@ -5,8 +5,11 @@ function App() {
   return (
     <HashRouter>
       <Switch>
-        <Route path="/products">
-          <div>Hello, React!</div>
+        <Route path="/products" exact>
+          <div>TODO should be replaced to products list page</div>
+        </Route>
+        <Route path="/products/:productId">
+          <div>TODO should be replaced to product detail page</div>
         </Route>
         <Route>
           <Redirect to="/products" />
