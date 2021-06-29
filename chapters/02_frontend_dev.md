@@ -12,6 +12,7 @@
 - [引数付きのクエリを実行する](#%E5%BC%95%E6%95%B0%E4%BB%98%E3%81%8D%E3%81%AE%E3%82%AF%E3%82%A8%E3%83%AA%E3%82%92%E5%AE%9F%E8%A1%8C%E3%81%99%E3%82%8B)
 - [Mutation を実行する](#mutation-%E3%82%92%E5%AE%9F%E8%A1%8C%E3%81%99%E3%82%8B)
   - [Mutation 実行後にクエリを再実行する](#mutation-%E5%AE%9F%E8%A1%8C%E5%BE%8C%E3%81%AB%E3%82%AF%E3%82%A8%E3%83%AA%E3%82%92%E5%86%8D%E5%AE%9F%E8%A1%8C%E3%81%99%E3%82%8B)
+- [その他の GraphQL Client Library](#%E3%81%9D%E3%81%AE%E4%BB%96%E3%81%AE-graphql-client-library)
 
 ## はじめに
 
@@ -613,6 +614,16 @@ const [addReview, { loading: submitting }] = useMutation<
 ```
 
 実際に画面からレビューを投稿し、レビュー一覧に反映されることを確認してみましょう。
+
+## その他の GraphQL Client Library
+
+この workshop では Apollo Client を紹介しました。JavaScript フロントエンドで利用可能な GraphQL ライブラリには Apollo Client 以外にも以下があります。
+
+| 名前                                             | 特徴                                                                                                                                                          |
+| :----------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [Relay](https://github.com/facebook/relay)       | Facebook 社が作成した React と GraphQL を統合したフロントエンド向けフレームワーク。Relay QL Spec という追加仕様をサーバーサイドに要求することもあり敷居が高い |
+| [urql](https://formidable.com/open-source/urql/) | 軽量、カスタマイズ性の高い GraphQL クライアントライブラリ。React 以外にも Vue.js や Svelte 向けの実装も存在している                                           |
+| [gqless](https://gqless.com/)                    | React JSX から自動的に GraphQL Query を生成するアプローチのクライアントライブラリ                                                                             |
 
 ---
 

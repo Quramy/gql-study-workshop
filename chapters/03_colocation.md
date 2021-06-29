@@ -20,7 +20,17 @@
 
 さて、Chapter 2. で作成した `ProductDetail` Component は少し大きくなってきました。このタイミングで Component を分割することを検討してみましょう。
 
-ここでは商品のレビュー一覧と投稿フォーム部分、JSX における以下の部分、を `ProductReview` Component に切り出してみたいと思います。
+```
+src
+├── App.tsx
+├── components
+│   ├── ProductDetail.tsx
+│   ├── ProductReview.tsx   <--- これを ProductDetail.tsx から分離
+│   ├── Products.tsx
+└── index.tsx
+```
+
+ここでは商品のレビュー一覧と投稿フォーム部分（JSX における以下の部分）を `ProductReview` Component に切り出してみたいと思います。
 
 ```tsx
 return (
@@ -213,7 +223,7 @@ export default function ProductReview({
 
 あるとき、「レビューの一覧に ★ の数も出してほしい」と言われたとします。
 
-簡単そうな変更ですね。 `ProductReview` Component を以下のようにすれば良さそうです。
+簡単そうな変更ですね。 `ProductReview` Component を以下のようにすれば良さそうです（GraphQL Schema の `Review` Type には既に `star` というフィールドが定義されていることを思い出してください）。
 
 ```tsx
 <ul>
@@ -250,9 +260,11 @@ GraphQL における「クエリの決定権がフロントエンドにある」
 
 先程の例はプロパティの追加であったため、 TypeScript の型エラーによって「クエリにフィールドが足りていないこと」に気づけたでしょう。
 
-しかし、逆のケース、すなわちエンハンスで「レビュー一覧から `star` を取り除いてほしい」と言われたとして「クエリから `star` を消す」ということにキチンと思い当たるでしょうか？
+しかし、逆のケース、すなわちエンハンスで「商品のレビュー一覧から `star` を取り除いてほしい」と言われたとして「クエリから `star` を消す」ということにキチンと思い当たるでしょうか？
 
 余分なフィールドがクエリにあったとしても、 TypeScript 上の型エラーにはなりません。`ProductReview` Component を一生懸命レビューしても気づきにくいと思います。
+
+ちなみに、このように GraphQL Server に画面上では不要なフィールドを問い合わせてしまっている状態のことを Over Fetching と呼びます。Over Fetching は HTTP レスポンスの肥大化や Server Side での無駄な SQL の発行など性能劣化を引き起こす要因となります。GraphQL がフロントエンドにもたらした「自由にクエリを書くことができる」というメリットの裏には「フロントエンドが責任を持って Server のパフォーマンスを守る」がついて回っているということを覚えておいてください。
 
 ## 細部のことは細部に任せる
 
