@@ -139,14 +139,25 @@ const resolvers: IResolvers<any, { readonly prismaClient: PrismaClient }> = {
   }
 };
 
+class PrismaClientPool {
+  private client: PrismaClient;
+  constructor() {
+    this.client = new PrismaClient({
+      log: ["query", "info", "warn", "error"]
+    });
+  }
+  getClient() {
+    return this.client;
+  }
+}
+
+const clientPool = new PrismaClientPool();
+
 const server = new ApolloServer({
   cors: true,
   context() {
-    const prismaClient = new PrismaClient({
-      log: ["query", "info", "warn", "error"]
-    });
     return {
-      prismaClient
+      prismaClient: clientPool.getClient()
     };
   },
   typeDefs,
