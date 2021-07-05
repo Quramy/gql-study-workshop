@@ -1,21 +1,31 @@
 import React from "react";
 import { HashRouter, Switch, Route, Redirect } from "react-router-dom";
 
+import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
+import Products from "./components/Products";
+import ProductDetail from "./components/ProductDetail";
+
 function App() {
+  const client = new ApolloClient({
+    uri: "http://localhost:4010/graphql",
+    cache: new InMemoryCache()
+  });
   return (
-    <HashRouter>
-      <Switch>
-        <Route path="/products" exact>
-          <div>TODO should be replaced to products list page</div>
-        </Route>
-        <Route path="/products/:productId">
-          <div>TODO should be replaced to product detail page</div>
-        </Route>
-        <Route>
-          <Redirect to="/products" />
-        </Route>
-      </Switch>
-    </HashRouter>
+    <ApolloProvider client={client}>
+      <HashRouter>
+        <Switch>
+          <Route path="/products" exact>
+            <Products />
+          </Route>
+          <Route path="/products/:productId">
+            <ProductDetail />
+          </Route>
+          <Route>
+            <Redirect to="/products" />
+          </Route>
+        </Switch>
+      </HashRouter>
+    </ApolloProvider>
   );
 }
 
