@@ -1,7 +1,9 @@
 import { v4 as uuid } from "uuid";
-import { ApolloServer, IResolvers } from "apollo-server";
+import { ApolloServer } from "apollo-server";
+import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core"
 import { PrismaClient } from "@prisma/client";
 import { PrismaSelect } from "@paljs/plugins";
+import { IResolvers } from "graphql-tools"
 
 const typeDefs = `
   """
@@ -161,7 +163,10 @@ const server = new ApolloServer({
     };
   },
   typeDefs,
-  resolvers
+  resolvers,
+  plugins: [
+    ApolloServerPluginLandingPageGraphQLPlayground(),
+  ],
 });
 
 const port = parseInt(process.env.PORT ?? "4010", 10);
