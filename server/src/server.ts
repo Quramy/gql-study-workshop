@@ -1,3 +1,4 @@
+import { setTimeout } from "timers/promises";
 import { v4 as uuid } from "uuid";
 import { ApolloServer } from "apollo-server";
 import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
@@ -85,6 +86,9 @@ const resolvers: IResolvers<any, { readonly prismaClient: PrismaClient }> = {
       },
       ctx
     ) {
+      if (productId.indexOf("003") !== -1) {
+        await setTimeout(1000);
+      }
       const product = await ctx.prismaClient.product.findUnique({
         where: {
           id: productId
