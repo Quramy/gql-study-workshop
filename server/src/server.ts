@@ -1,9 +1,9 @@
 import { v4 as uuid } from "uuid";
 import { ApolloServer } from "apollo-server";
-import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core"
+import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 import { PrismaClient } from "@prisma/client";
 import { PrismaSelect } from "@paljs/plugins";
-import { IResolvers } from "graphql-tools"
+import { IResolvers } from "@graphql-tools/utils";
 
 const typeDefs = `
   """
@@ -55,7 +55,7 @@ const typeDefs = `
 const resolvers: IResolvers<any, { readonly prismaClient: PrismaClient }> = {
   Query: {
     product(_root, { id }: { readonly id: string }, ctx, info) {
-      const select = new PrismaSelect(info);
+      const select = new PrismaSelect(info as any);
       return ctx.prismaClient.product.findUnique({
         ...select.value,
         where: {
@@ -64,7 +64,7 @@ const resolvers: IResolvers<any, { readonly prismaClient: PrismaClient }> = {
       });
     },
     products(_root, _args, ctx, info) {
-      const select = new PrismaSelect(info);
+      const select = new PrismaSelect(info as any);
       return ctx.prismaClient.product.findMany({
         ...select.value
       });
@@ -164,9 +164,7 @@ const server = new ApolloServer({
   },
   typeDefs,
   resolvers,
-  plugins: [
-    ApolloServerPluginLandingPageGraphQLPlayground(),
-  ],
+  plugins: [ApolloServerPluginLandingPageGraphQLPlayground()]
 });
 
 const port = parseInt(process.env.PORT ?? "4010", 10);
