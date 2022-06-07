@@ -12,6 +12,7 @@
 - [引数付きのクエリを実行する](#%E5%BC%95%E6%95%B0%E4%BB%98%E3%81%8D%E3%81%AE%E3%82%AF%E3%82%A8%E3%83%AA%E3%82%92%E5%AE%9F%E8%A1%8C%E3%81%99%E3%82%8B)
 - [Mutation を実行する](#mutation-%E3%82%92%E5%AE%9F%E8%A1%8C%E3%81%99%E3%82%8B)
   - [Mutation 実行後にクエリを再実行する](#mutation-%E5%AE%9F%E8%A1%8C%E5%BE%8C%E3%81%AB%E3%82%AF%E3%82%A8%E3%83%AA%E3%82%92%E5%86%8D%E5%AE%9F%E8%A1%8C%E3%81%99%E3%82%8B)
+  - [(Advanced) Mutation の結果を利用してキャッシュを更新する](#advanced-mutation-%E3%81%AE%E7%B5%90%E6%9E%9C%E3%82%92%E5%88%A9%E7%94%A8%E3%81%97%E3%81%A6%E3%82%AD%E3%83%A3%E3%83%83%E3%82%B7%E3%83%A5%E3%82%92%E6%9B%B4%E6%96%B0%E3%81%99%E3%82%8B)
 - [その他の GraphQL Client Library](#%E3%81%9D%E3%81%AE%E4%BB%96%E3%81%AE-graphql-client-library)
 
 ## はじめに
@@ -331,6 +332,11 @@ const query = gql`
 `;
 ```
 
+VSC を利用していて補完やエラーチェックが動作しない場合、以下を確認してください。
+
+- `frontend` ディレクトリ直下を VSC で開いているかどうか（`.vscode` と同じ階層で開いてください）
+- Ctrl + Shift + P (mac OS の場合は Cmd + Shift + P ) から "Select TypeScript Version" を検索し、表示される TypeScript のオプションが "Use Workspace Version" となっているかどうか
+
 ### クエリの実行結果と TypeScript の型
 
 現状では、 `useQuery` で取得してきた `data` は TypeScript 上では `any` 型となってしまっています。
@@ -614,6 +620,116 @@ const [addReview, { loading: submitting }] = useMutation<
 ```
 
 実際に画面からレビューを投稿し、レビュー一覧に反映されることを確認してみましょう。
+
+### (Advanced) Mutation の結果を利用してキャッシュを更新する
+
+_このパートは若干発展的な内容を扱っているため、読み飛ばしても構いません。_
+
+`refetch` は手軽にキャッシュの更新が行えますが、場合によっては非機能要件を満たせないことがあります。
+
+- 該当のクエリの再実行に大量のサーバーリソースを消費する（e.g. サーバー側で Slow SQL Query となってしまう）
+- ネットワークの結果を待たずに、ユーザーの画面に結果を反映させたい（Optimistic Update）
+- etc,,,
+
+このような場合、クエリを再実行せずに Apollo Client のキャッシュを更新することも選択肢の１つです。
+
+今回の例の場合、`AddReviewMutation` を実行したら、以下のようにデータが変更されることを開発者は知っています。
+
+- いま見ている商品詳細の `reviews` の末尾に自分が書いたレビューが追加される
+
+そこで、 `AddReviewMutation` の結果を用いて、キャッシュを更新するようにしてみましょう。Mutation の中身を少し書き換えます。
+
+```ts
+const mutation = gql`
+  mutation AddReviewMutation($pid: ID!, $comment: String!) {
+    addReview(
+      productId: $pid
+      addReviewInput: { commentBody: $comment, star: 0 }
+    ) {
+      id
+      commentBody # 追加した
+    }
+  }
+`;
+```
+
+次に、 `useMutation` の `update` オプションを以下のように書き換えていきます。第一引数の `cache` から、`readQuery` と `writeQuery` を使うようにしました。
+
+```ts
+const [mutate, { loading: submitting }] = useMutation<
+  AddReviewMutation,
+  AddReviewMutationVariables
+>(mutation, {
+  // Mutation 実行後に動作する関数
+  update: (cache, { data }) => {
+    if (!data?.addReview) return;
+    setMyComment("");
+    // refetch() // もう使わない
+
+    // Apollo Client のキャッシュから商品詳細の内容を取得
+    const cachedProductDetail = cache.readQuery<
+      ProductDetailQuery,
+      ProductDetailQueryVariables
+    >({
+      query,
+      variables: {
+        id: productId
+      }
+    });
+
+    if (!cachedProductDetail?.product) return;
+
+    const { product } = cachedProductDetail;
+    const createdReview = data.addReview;
+
+    // Apollo Client のキャッシュに、変更した商品詳細データをセット
+    cache.writeQuery<ProductDetailQuery, ProductDetailQueryVariables>({
+      query,
+      variables: {
+        id: productId
+      },
+      data: {
+        product: {
+          ...product,
+          // レビュー部分の末尾に Mutation の結果データを追加
+          reviews: [...product.reviews, createdReview]
+        }
+      }
+    });
+  }
+});
+```
+
+画面から実行してみましょう。 `refetch` を使った場合と同じ様に Apollo Client のキャッシュが変更される様子が拡張機能から確認できるはずです。
+
+今回のような「変更するキャッシュの内容がわかっている」というケースにおいては、往々にして Mutation の引数だけからほぼキャッシュの更新内容が決定できることが多いです。
+
+今回の場合、 `commentBody` はユーザー自身が `<textarea>` に書いた内容そのものです。このような場合、実際の Mutation の完了を待つ前にキャッシュを更新することで、ユーザーの体感的なパフォーマンスを向上できます。これを Optimistic Update と呼びます。
+
+Apollo Client で Optimistic Update を実現する場合、 `useMutation` の `optimisticResponse` オプションを利用します。
+
+```ts
+const [mutate, { loading: submitting }] = useMutation<
+  AddReviewMutation,
+  AddReviewMutationVariables
+>(mutation, {
+  // Mutation 実行後に動作する関数
+  update: (cache, { data }) => {
+    // 変更不要
+  },
+  optimisticResponse: {
+    addReview: {
+      id: "__TEMP_REVIEW_ID__",
+      commentBody
+    }
+  }
+});
+```
+
+`update` オプションの実行内容は一切変更する必要はありません。 `optimisticResponse` を追加すると、`update` の処理は都合２回実行されます。
+
+1. `mutate` 実行直後（ユーザーが「追加」ボタンを押したすぐ後）。このときは `optimisticResponse` が `update` の第２引数のデータとなる。
+2. サーバーで Mutation が完了し、結果がフロントエンドに返ってきたとき。このときは `AddReviewMutation` の結果が `update` の第２引数のデータとなる。
 
 ## その他の GraphQL Client Library
 
