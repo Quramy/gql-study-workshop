@@ -2,7 +2,7 @@
   "name": "server",
   "private": true,
   "scripts": {
-    "postinstall": "npm run prisma:gen && npm run prisma:migrate",
+    "prepare": "npm run prisma:gen && npm run prisma:migrate",
     "prisma:gen": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "start": "ts-node-dev src/server.ts",
@@ -10,19 +10,19 @@
   },
   "dependencies": {
     "@paljs/plugins": "^3.3.3",
-    "@prisma/client": "^2.26.0",
-    "apollo-server": "^3.0.0",
-    "graphql": "^15.5.0",
-    "graphql-tools": "^7.0.5",
+    "@prisma/client": "^2.30.3",
+    "apollo-server": "^3.8.0",
+    "graphql": "^16.5.0",
+    "graphql-tools": "^8.2.11",
     "sqlite": "^4.0.23",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@types/node": "^15.12.3",
+    "@types/node": "^16.11.38",
     "@types/uuid": "^8.3.0",
     "prettier": "^2.3.1",
     "prisma": "^2.26.0",
-    "ts-node-dev": "^1.1.6",
-    "typescript": "^4.3.4"
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.7.3"
   }
 }
