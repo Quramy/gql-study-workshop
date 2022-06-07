@@ -648,6 +648,7 @@ const mutation = gql`
     ) {
       id
       commentBody # 追加した
+      __typename
     }
   }
 `;
@@ -719,6 +720,7 @@ const [mutate, { loading: submitting }] = useMutation<
   },
   optimisticResponse: {
     addReview: {
+      __typename: "Review",
       id: "__TEMP_REVIEW_ID__",
       commentBody
     }
