@@ -433,7 +433,7 @@ const query = gql`
   }
 `;
 
-export default function () {
+export default function ProductDetail() {
   const { productId } = useParams<{ readonly productId: string }>();
   const { data, loading } = useQuery<
     ProductDetailQuery,
@@ -531,7 +531,7 @@ const mutation = gql`
   }
 `;
 
-export default function () {
+export default function ProductDetail() {
   const [myComment, setMyComment] = useState("");
   const [addReview, { loading: submitting }] = useMutation<
     AddReviewMutation,
@@ -555,7 +555,7 @@ export default function () {
       >
         <div>
           <label>
-            コメント
+            コメント <br />
             <textarea
               value={myComment}
               onChange={e => setMyComment(e.target.value)}
