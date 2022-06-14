@@ -433,7 +433,7 @@ const query = gql`
   }
 `;
 
-export default function () {
+export default function ProductDetail() {
   const { productId } = useParams<{ readonly productId: string }>();
   const { data, loading } = useQuery<
     ProductDetailQuery,
