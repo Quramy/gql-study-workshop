@@ -60,23 +60,23 @@ const resolvers: IResolvers<any, { readonly prismaClient: PrismaClient }> = {
       return ctx.prismaClient.product.findUnique({
         ...select.value,
         where: {
-          id
-        }
+          id,
+        },
       });
     },
     products(_root, _args, ctx, info) {
       const select = new PrismaSelect(info as any);
       return ctx.prismaClient.product.findMany({
-        ...select.value
+        ...select.value,
       });
-    }
+    },
   },
   Mutation: {
     async addReview(
       _root,
       {
         productId,
-        addReviewInput: { commentBody, star = 0 }
+        addReviewInput: { commentBody, star = 0 },
       }: {
         readonly productId: string;
         readonly addReviewInput: {
@@ -91,8 +91,8 @@ const resolvers: IResolvers<any, { readonly prismaClient: PrismaClient }> = {
       }
       const product = await ctx.prismaClient.product.findUnique({
         where: {
-          id: productId
-        }
+          id: productId,
+        },
       });
       if (!product) return null;
       const review = await ctx.prismaClient.review.create({
@@ -100,8 +100,8 @@ const resolvers: IResolvers<any, { readonly prismaClient: PrismaClient }> = {
           id: uuid(),
           commentBody,
           star,
-          productId
-        }
+          productId,
+        },
       });
       return review;
     },
@@ -112,8 +112,8 @@ const resolvers: IResolvers<any, { readonly prismaClient: PrismaClient }> = {
     ) {
       await ctx.prismaClient.review.delete({
         where: {
-          id: reviewId
-        }
+          id: reviewId,
+        },
       });
       return reviewId;
     },
@@ -124,51 +124,41 @@ const resolvers: IResolvers<any, { readonly prismaClient: PrismaClient }> = {
     ) {
       const review = await ctx.prismaClient.review.findUnique({
         where: {
-          id: reviewId
-        }
+          id: reviewId,
+        },
       });
       if (!review) return null;
       await ctx.prismaClient.review.update({
         where: {
-          id: reviewId
+          id: reviewId,
         },
         data: {
           ...review,
-          star: review.star + 1
-        }
+          star: review.star + 1,
+        },
       });
       return {
         ...review,
-        star: review.star + 1
+        star: review.star + 1,
       };
-    }
-  }
+    },
+  },
 };
 
-class PrismaClientPool {
-  private client: PrismaClient;
-  constructor() {
-    this.client = new PrismaClient({
-      log: ["query", "info", "warn", "error"]
-    });
-  }
-  getClient() {
-    return this.client;
-  }
-}
-
-const clientPool = new PrismaClientPool();
+const prismaClient = new PrismaClient({
+  log: ["query", "info", "warn", "error"],
+});
 
 const server = new ApolloServer({
   cors: true,
   context() {
     return {
-      prismaClient: clientPool.getClient()
+      prismaClient,
     };
   },
   typeDefs,
   resolvers,
-  plugins: [ApolloServerPluginLandingPageGraphQLPlayground()]
+  plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
 });
 
 const port = parseInt(process.env.PORT ?? "4010", 10);
